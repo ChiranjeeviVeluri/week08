@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch and display products
     async function fetchProducts() {
         productListDiv.innerHTML = '<p>Loading products...</p>';
-        const url = `${PRODUCT_API_BASE_URL}/products/`;
+        const url = `${PRODUCT_SERVICE_IP}/products/`;
         console.log("Attempting to fetch products from URL:", url); // DEBUG LOG
         try {
             const response = await fetch(url);
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newProduct = { name, price, stock_quantity, description };
 
         try {
-            const response = await fetch(`${PRODUCT_API_BASE_URL}/products/`, {
+            const response = await fetch(`${PRODUCT_SERVICE_IP}/products/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             try {
-                const response = await fetch(`${PRODUCT_API_BASE_URL}/products/${productId}`, {
+                const response = await fetch(`${PRODUCT_SERVICE_IP}/products/${productId}`, {
                     method: 'DELETE',
                 });
 
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 showMessage(`Uploading image for product ${productId}...`, 'info');
-                const response = await fetch(`${PRODUCT_API_BASE_URL}/products/${productId}/upload-image`, {
+                const response = await fetch(`${PRODUCT_SERVICE_IP}/products/${productId}/upload-image`, {
                     method: 'POST',
                     body: formData, // No 'Content-Type' header needed for FormData; browser sets it
                 });
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             showMessage("Placing order...", 'info');
-            const response = await fetch(`${ORDER_API_BASE_URL}/orders/`, {
+            const response = await fetch(`${ORDER_SERVICE_IP}/orders/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchOrders() {
         orderListDiv.innerHTML = '<p>Loading orders...</p>';
         try {
-            const response = await fetch(`${ORDER_API_BASE_URL}/orders/`);
+            const response = await fetch(`${ORDER_SERVICE_IP}/orders/`);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 showMessage(`Updating status for order ${orderId} to "${newStatus}"...`, 'info');
-                const response = await fetch(`${ORDER_API_BASE_URL}/orders/${orderId}/status?new_status=${newStatus}`, {
+                const response = await fetch(`${ORDER_SERVICE_IP}/orders/${orderId}/status?new_status=${newStatus}`, {
                     method: 'PATCH',
                 });
 
@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             try {
-                const response = await fetch(`${ORDER_API_BASE_URL}/orders/${orderId}`, {
+                const response = await fetch(`${ORDER_SERVICE_IP}/orders/${orderId}`, {
                     method: 'DELETE',
                 });
 
