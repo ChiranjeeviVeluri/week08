@@ -1,3 +1,21 @@
+
+# Azure credentials
+azure-credentials.json
+service-principal.json
+
+# Generic secret files
+*.secret
+*.pem
+*.key
+
+# JSON files that might contain secrets
+*.json
+
+# Environment files
+*.env
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

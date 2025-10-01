@@ -1,0 +1,88 @@
+name: CI - Validate All Services
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        service:
+          - product_service
+          - order_service
+          - frontend
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ${{ matrix.service == 'product_service' && 'products' || 'orders' }}
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Backend services validation (product_service and order_service)
+      - name: Set up Python for backend
+        if: matrix.service != 'frontend'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install backend dependencies
+        if: matrix.service != 'frontend'
+        run: |
+          pip install --upgrade pip
+          pip install -r backend/${{ matrix.service }}/requirements.txt
+          pip install pytest httpx
+
+      - name: Run backend tests
+        if: matrix.service != 'frontend'
+        working-directory: backend/${{ matrix.service }}
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: ${{ matrix.service == 'product_service' && 'products' || 'orders' }}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        run: pytest tests --maxfail=1 --disable-warnings -q
+
+      # Frontend validation
+      - name: Set up Node.js for frontend
+        if: matrix.service == 'frontend'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Validate frontend structure
+        if: matrix.service == 'frontend'
+        run: |
+          echo "Validating frontend files..."
+          test -f frontend/index.html || (echo "index.html missing" && exit 1)
+          test -f frontend/main.js || (echo "main.js missing" && exit 1)
+          test -f frontend/Dockerfile || (echo "Dockerfile missing" && exit 1)
+          echo "Frontend validation passed!"
+
+      - name: Build frontend Docker image (validation)
+        if: matrix.service == 'frontend'
+        run: |
+          docker build -t frontend-test:${{ github.sha }} ./frontend
+          echo "Frontend Docker build successful!"
